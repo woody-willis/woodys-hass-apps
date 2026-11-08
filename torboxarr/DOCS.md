@@ -14,6 +14,7 @@ Makes [TorBox](https://torbox.app) look like qBittorrent and SABnzbd so Sonarr/R
 | `data_root` | Where downloads are stored (default `/share/torboxarr`) |
 | `log_level` | `DEBUG`, `INFO`, `WARN`, `ERROR` |
 | `puid` / `pgid` | UID/GID files are written as. Match Sonarr/Radarr (`0`/`0` = root). The top-level `data_root` folder is chowned to this user |
+| `reset_database` | When `true`, deletes the job database on start. Turn it off again afterwards |
 
 The SQLite database is stored in the app's private `/data` volume and is included in HA backups.
 

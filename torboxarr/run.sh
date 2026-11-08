@@ -38,6 +38,12 @@ v="$(opt server_base_url)";    [ -z "$v" ] || export TORBOXARR_SERVER_BASE_URL="
 # /data is the app's persistent storage; keep the SQLite DB there.
 export TORBOXARR_DATABASE_PATH=/data/torboxarr.db
 
+if [ "$(opt reset_database)" = "true" ]; then
+    echo "[torboxarr addon] reset_database is enabled: deleting $TORBOXARR_DATABASE_PATH" >&2
+    echo "[torboxarr addon] Turn reset_database off again or the DB will be wiped on every start." >&2
+    rm -f "$TORBOXARR_DATABASE_PATH" "$TORBOXARR_DATABASE_PATH-wal" "$TORBOXARR_DATABASE_PATH-shm"
+fi
+
 mkdir -p "$TORBOXARR_DATA_ROOT"
 # Top level only (not recursive) so existing media isn't touched.
 chown "$PUID:$PGID" "$TORBOXARR_DATA_ROOT"

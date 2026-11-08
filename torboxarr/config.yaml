@@ -1,5 +1,5 @@
 name: TorBoxarr
-version: "1.0.6"
+version: "1.0.7"
 slug: torboxarr
 description: Presents TorBox as a qBittorrent / SABnzbd download client for Sonarr and Radarr
 url: https://github.com/MrJoiny/torboxarr
@@ -28,6 +28,7 @@ options:
   log_level: INFO
   puid: 0
   pgid: 0
+  reset_database: false
 schema:
   torbox_api_token: password
   qbit_password: password
@@ -38,3 +39,4 @@ schema:
   log_level: list(DEBUG|INFO|WARN|ERROR)
   puid: int(0,)
   pgid: int(0,)
+  reset_database: bool
