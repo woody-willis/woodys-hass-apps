@@ -1,0 +1,40 @@
+name: TorBoxarr
+version: "1.0.5"
+slug: torboxarr
+description: Presents TorBox as a qBittorrent / SABnzbd download client for Sonarr and Radarr
+url: https://github.com/MrJoiny/torboxarr
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+ports:
+  8085/tcp: 8085
+ports_description:
+  8085/tcp: qBittorrent / SABnzbd compatible API
+map:
+  - type: share
+    read_only: false
+  - type: media
+    read_only: false
+options:
+  torbox_api_token: ""
+  qbit_password: ""
+  sab_api_key: ""
+  sab_nzb_key: ""
+  server_base_url: ""
+  data_root: /share/torboxarr
+  log_level: INFO
+  puid: 0
+  pgid: 0
+schema:
+  torbox_api_token: password
+  qbit_password: password
+  sab_api_key: password
+  sab_nzb_key: password?
+  server_base_url: str?
+  data_root: str
+  log_level: list(DEBUG|INFO|WARN|ERROR)
+  puid: int(0,)
+  pgid: int(0,)
