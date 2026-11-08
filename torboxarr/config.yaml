@@ -1,5 +1,5 @@
 name: TorBoxarr
-version: "1.0.5"
+version: "1.0.6"
 slug: torboxarr
 description: Presents TorBox as a qBittorrent / SABnzbd download client for Sonarr and Radarr
 url: https://github.com/MrJoiny/torboxarr

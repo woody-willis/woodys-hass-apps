@@ -46,4 +46,32 @@ chown "$PUID:$PGID" "$TORBOXARR_DATA_ROOT"
 rm -rf /config
 ln -s /data /config
 
-exec /entrypoint.sh
+# Turn upstream's JSON log lines into readable text:
+#   09:03:36 INFO  starting torboxarr version=1.0.5
+# Non-JSON lines (e.g. goose) pass through unchanged.
+FORMAT='
+. as $line | (try ($line | fromjson) catch $line) |
+if type == "object" and has("msg") then
+  ((.time // "")[11:19]) + " " + (((.level // "INFO") + "     ")[0:5]) + " " + .msg
+  + (del(.time, .level, .msg) | to_entries
+     | map(" " + .key + "=" + (.value | if type == "string" then . else tojson end))
+     | join(""))
+else . end'
+
+FIFO=/tmp/torboxarr.log
+rm -f "$FIFO"
+mkfifo "$FIFO"
+jq -R -r --unbuffered "$FORMAT" < "$FIFO" &
+fmt_pid=$!
+
+/entrypoint.sh > "$FIFO" 2>&1 &
+app_pid=$!
+
+# Forward stop signals so the app shuts down gracefully.
+trap 'kill -TERM "$app_pid" 2>/dev/null || true' TERM INT
+wait "$app_pid" || true
+trap - TERM INT
+wait "$app_pid" 2>/dev/null
+status=$?
+wait "$fmt_pid" 2>/dev/null || true
+exit "$status"
