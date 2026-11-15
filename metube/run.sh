@@ -9,16 +9,47 @@ opt() {
     jq -r --arg k "$1" '.[$k] // empty' "$OPTIONS"
 }
 
+trim() {
+    printf '%s' "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'
+}
+
 fail() {
     echo "[metube addon] $*" >&2
     exit 1
 }
 
+# Only /media and /share are mounted by this app, so anything else would be
+# written inside the container and lost on restart.
+require_mounted_dir() {
+    case "$2" in
+        /media|/media/*|/share|/share/*) ;;
+        *) fail "$1 must be under /media or /share (got '$2')" ;;
+    esac
+}
+
+# Normalize an optional download folder. Relative paths are resolved against
+# DOWNLOAD_DIR, and the upstream image's /downloads prefix is treated as an
+# alias for DOWNLOAD_DIR so Docker-style paths keep working.
+resolve_optional_dir() {
+    name="$1"
+    value="$(trim "$2")"
+    if [ -z "$value" ]; then
+        printf '%s' "$DOWNLOAD_DIR"
+        return 0
+    fi
+    case "$value" in
+        /downloads) value="$DOWNLOAD_DIR" ;;
+        /downloads/*) value="$DOWNLOAD_DIR/${value#/downloads/}" ;;
+        /*) ;;
+        *) value="$DOWNLOAD_DIR/$value" ;;
+    esac
+    require_mounted_dir "$name" "$value"
+    printf '%s' "$value"
+}
+
 PUID="$(opt puid)"
 PGID="$(opt pgid)"
-DOWNLOAD_DIR="$(opt download_dir)"
-AUDIO_DOWNLOAD_DIR="$(opt audio_download_dir)"
-TEMP_DIR="$(opt temp_dir)"
+DOWNLOAD_DIR="$(trim "$(opt download_dir)")"
 MAX_CONCURRENT_DOWNLOADS="$(opt max_concurrent_downloads)"
 OUTPUT_TEMPLATE="$(opt output_template)"
 DEFAULT_THEME="$(opt default_theme)"
@@ -27,22 +58,28 @@ YTDL_OPTIONS="$(opt ytdl_options)"
 YTDL_NIGHTLY_UPDATE_TIME="$(opt ytdl_nightly_update_time)"
 
 [ -n "$DOWNLOAD_DIR" ] || fail "download_dir is required"
+require_mounted_dir download_dir "$DOWNLOAD_DIR"
+
+# Audio and temp folders follow DOWNLOAD_DIR unless set. Assigning them
+# explicitly also clears the image's /downloads defaults.
+AUDIO_DOWNLOAD_DIR="$(resolve_optional_dir audio_download_dir "$(opt audio_download_dir)")"
+TEMP_DIR="$(resolve_optional_dir temp_dir "$(opt temp_dir)")"
+
+# Persistent queue, history, subscriptions and cookies live in /data so they
+# are included in Home Assistant backups.
+STATE_DIR=/data/metube
 
 export PUID="${PUID:-0}" PGID="${PGID:-0}"
 
 # MeTube listens on this port; Supervisor's ingress proxy forwards to it.
 export HOST=0.0.0.0 PORT=8081
 
-# Persistent queue, history, subscriptions and cookies live in /data so they
-# are included in Home Assistant backups.
-export DOWNLOAD_DIR
-export STATE_DIR=/data/metube
+export DOWNLOAD_DIR AUDIO_DOWNLOAD_DIR TEMP_DIR STATE_DIR
 
-# Audio and temp folders follow DOWNLOAD_DIR unless set. Assigning them
-# explicitly also clears the image's /downloads defaults.
-AUDIO_DOWNLOAD_DIR="${AUDIO_DOWNLOAD_DIR:-$DOWNLOAD_DIR}"
-TEMP_DIR="${TEMP_DIR:-$DOWNLOAD_DIR}"
-export AUDIO_DOWNLOAD_DIR TEMP_DIR
+echo "[metube addon] download dir: $DOWNLOAD_DIR"
+echo "[metube addon] audio dir:    $AUDIO_DOWNLOAD_DIR"
+echo "[metube addon] temp dir:     $TEMP_DIR"
+echo "[metube addon] state dir:    $STATE_DIR"
 
 [ -z "$MAX_CONCURRENT_DOWNLOADS" ] || export MAX_CONCURRENT_DOWNLOADS
 [ -z "$OUTPUT_TEMPLATE" ] || export OUTPUT_TEMPLATE

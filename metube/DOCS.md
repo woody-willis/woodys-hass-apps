@@ -15,9 +15,9 @@ sidebar through ingress.
 | Option | Description |
 |---|---|
 | `puid` / `pgid` | UID/GID MeTube runs as and writes files with (default `0` = root). The top level of each configured folder is chowned to this user; existing files are left alone |
-| `download_dir` | Where downloads are saved (default `/media/metube`). Keep it under `/media` or `/share` so Home Assistant can see the files |
-| `audio_download_dir` | Optional separate folder for audio-only downloads. Empty uses `download_dir` |
-| `temp_dir` | Optional folder for in-progress downloads. Empty uses `download_dir` |
+| `download_dir` | Where downloads are saved (default `/media/metube`). Must be under `/media` or `/share` so Home Assistant can see the files |
+| `audio_download_dir` | Optional separate folder for audio-only downloads. Empty uses `download_dir`. Must be under `/media` or `/share`; a relative path is resolved against `download_dir`, and `/downloads/...` is accepted as an alias for `download_dir` |
+| `temp_dir` | Optional folder for in-progress downloads. Empty uses `download_dir`. Same path rules as `audio_download_dir` |
 | `max_concurrent_downloads` | Downloads that run at once; the rest wait (default `3`) |
 | `output_template` | yt-dlp filename template (default `%(title)s.%(ext)s`) |
 | `default_theme` | `auto`, `light` or `dark` |
@@ -28,6 +28,11 @@ sidebar through ingress.
 The download queue, history, subscriptions and uploaded cookies are stored in
 `/data/metube`, which is private to the app and included in Home Assistant
 backups.
+
+The resolved download, audio and temp folders are printed in the app log on
+every start, so you can confirm the options took effect. Restart the app after
+changing options; Home Assistant does not apply them to an already running
+container.
 
 ## Using it
 

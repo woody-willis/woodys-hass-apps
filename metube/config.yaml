@@ -1,5 +1,5 @@
 name: MeTube
-version: "2026.11.14"
+version: "2026.11.15"
 slug: metube
 description: Web UI for yt-dlp to download video, audio, subtitles and thumbnails from YouTube and hundreds of other sites
 url: https://github.com/alexta69/metube
