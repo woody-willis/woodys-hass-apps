@@ -1,0 +1,48 @@
+name: MeTube
+version: "2026.11.14"
+slug: metube
+description: Web UI for yt-dlp to download video, audio, subtitles and thumbnails from YouTube and hundreds of other sites
+url: https://github.com/alexta69/metube
+arch:
+  - amd64
+  - aarch64
+init: false
+startup: services
+boot: auto
+ingress: true
+ingress_port: 8081
+panel_icon: mdi:youtube
+panel_title: MeTube
+ports:
+  8081/tcp: null
+ports_description:
+  8081/tcp: Optional direct web access (ingress is enabled by default)
+map:
+  - type: media
+    read_only: false
+  - type: share
+    read_only: false
+options:
+  puid: 0
+  pgid: 0
+  download_dir: /media/metube
+  audio_download_dir: ""
+  temp_dir: ""
+  max_concurrent_downloads: 3
+  output_template: "%(title)s.%(ext)s"
+  default_theme: auto
+  log_level: INFO
+  ytdl_options: ""
+  ytdl_nightly_update_time: ""
+schema:
+  puid: int(0,)
+  pgid: int(0,)
+  download_dir: str
+  audio_download_dir: str?
+  temp_dir: str?
+  max_concurrent_downloads: int(1,)
+  output_template: str
+  default_theme: list(auto|light|dark)
+  log_level: list(DEBUG|INFO|WARNING|ERROR|CRITICAL|NONE)
+  ytdl_options: str?
+  ytdl_nightly_update_time: str?

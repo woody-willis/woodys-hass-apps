@@ -10,4 +10,5 @@ A Home Assistant app (add-on) repository.
 
 ## Apps
 
+- **[MeTube](metube/DOCS.md)**: Web UI for yt-dlp to download video and audio from YouTube and many other sites, with ingress.
 - **[TorBoxarr](torboxarr/DOCS.md)**: TorBox as a qBittorrent/SABnzbd download client for the *arr apps.
